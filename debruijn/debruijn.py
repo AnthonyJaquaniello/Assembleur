@@ -74,12 +74,12 @@ def build_kmer_dict(i, k):
         for kmer in cut_kmer(seq, k):
             if kmer not in d.keys():
                 d[kmer] = 1
-            else:
+            else:cd
                 d[kmer] += 1
     return d
 
-kmer_dict = build_kmer_dict("../data/eva71_two_reads.fq", 21)
-
+kmer_dict = build_kmer_dict("../data/eva71_two_reads.fq", int(21))
+#../data/eva71_two_reads.fq
 ## Construction de l'arbre de de Bruijn
 
 def build_graph(dico):
@@ -137,7 +137,7 @@ def fill(text, width=80):
 def save_contigs(tuple_list, path):
     with open(path, "w") as filin:
         for i in range(len(tuple_list)):
-            filin.write(">contig{}len={}\n".format(1, tuple_list[i][1]))
+            filin.write(">contig_{} len={}\n".format(i, tuple_list[i][1]))
             filin.write(fill(tuple_list[i][0]))
             filin.write("\n")
             
