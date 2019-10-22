@@ -1,7 +1,7 @@
 import argparse
 import networkx as nt
 from networkx.algorithms.shortest_paths.generic import shortest_path
-
+import os
 
 def get_starting_nodes():
     pass
@@ -136,7 +136,12 @@ def fill(text, width=80):
 
 def save_contigs(tuple_list, path):
     with open(path, "w") as filin:
-        filin.write(">{}len={}".format(1, tuples[1]))
-        filin.write(fill(tuples[0]))
+        for i in range(len(tuple_list)):
+            filin.write(">contig{}len={}\n".format(1, tuple_list[i][1]))
+            filin.write(fill(tuple_list[i][0]))
+            filin.write("\n")
+            
+
+save_contigs(contig_list, "save_contig.txt")
 
            
