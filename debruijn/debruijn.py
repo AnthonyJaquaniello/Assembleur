@@ -70,11 +70,13 @@ def build_kmer_dict(i, k):
     d = {}
     for seq in seq_gen:
         for kmer in cut_kmer(seq, k):
-            d[kmer] = seq.count(kmer)
+            if kmer not in d.keys():
+                d[kmer] = 1
+            else:
+                d[kmer] += 1
     return d
 
-kmer_dict = build_kmer_dict(args.i, int(args.k))
-print(kmer_dict)
+kmer_dict = build_kmer_dict("data/eva71_two_reads.fq", 21)
 
 ## Construction de l'arbre de de Bruijn
 
@@ -85,8 +87,26 @@ def build_graph(dico):
         suffix = key[1:]   
         graph.add_edge(prefix, suffix, weight = dico[key])
     return graph
-l
+
 graph = build_graph(kmer_dict)
 
-    
+## Parcours graph de De Bruijn
+def get_starting_nodes(graph):
+    l = []
+    for d in graph.pred:
+        if len(graph.pred[d]) == 0:
+            l.append(d)
+    return l
 
+input_node = get_starting_nodes(graph)
+
+def get_sink_nodes(graph):
+    l = []
+    for d in graph.succ:
+        if len(graph.succ[d]) == 0:
+            l.append(d)
+    return l
+
+print(input_node)
+output_node = get_sink_nodes(graph)
+print(output_node)    
