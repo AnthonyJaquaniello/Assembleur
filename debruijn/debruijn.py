@@ -2,6 +2,7 @@ import argparse
 import networkx as nt
 from networkx.algorithms.shortest_paths.generic import shortest_path
 import os
+from statistics import stdev
 
 def get_starting_nodes():
     pass
@@ -74,7 +75,7 @@ def build_kmer_dict(i, k):
         for kmer in cut_kmer(seq, k):
             if kmer not in d.keys():
                 d[kmer] = 1
-            else:cd
+            else:
                 d[kmer] += 1
     return d
 
@@ -144,4 +145,6 @@ def save_contigs(tuple_list, path):
 
 save_contigs(contig_list, "save_contig.txt")
 
+def std(liste):
+    return stdev(liste)
            
