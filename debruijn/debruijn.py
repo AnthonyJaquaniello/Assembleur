@@ -1,5 +1,7 @@
 import argparse
 import networkx as nt
+from networkx.algorithms.shortest_paths.generic import shortest_path
+
 
 def get_starting_nodes():
     pass
@@ -76,14 +78,14 @@ def build_kmer_dict(i, k):
                 d[kmer] += 1
     return d
 
-kmer_dict = build_kmer_dict("data/eva71_two_reads.fq", 21)
+kmer_dict = build_kmer_dict("../data/eva71_two_reads.fq", 21)
 
 ## Construction de l'arbre de de Bruijn
 
 def build_graph(dico):
     graph = nt.DiGraph()
     for key in dico:
-        prefix = key[0:-1]
+        prefix = key[:-1]
         suffix = key[1:]   
         graph.add_edge(prefix, suffix, weight = dico[key])
     return graph
@@ -91,6 +93,7 @@ def build_graph(dico):
 graph = build_graph(kmer_dict)
 
 ## Parcours graph de De Bruijn
+
 def get_starting_nodes(graph):
     l = []
     for d in graph.pred:
@@ -109,4 +112,31 @@ def get_sink_nodes(graph):
 
 print(input_node)
 output_node = get_sink_nodes(graph)
-print(output_node)    
+print(output_node)
+
+def get_contigs(graph, inode, outnode):
+    tuple_list = []
+    for nodin in inode:
+        for nodout in outnode:
+            if len(list(nt.all_simple_paths(graph, nodin, nodout))) != 0:
+                path  = shortest_path(graph, nodin, nodout)
+                contig = path[0]
+                for i in range(1, len(path)):
+                    contig += path[i][-1]
+                tuples = []
+                tuples.append(contig)
+                tuples.append(len(contig))
+                tuple_list.append(tuple(tuples))
+    return tuple_list
+
+contig_list = get_contigs(graph, input_node, output_node)
+
+def fill(text, width=80):
+    return os.linesep.join(text[i:i+width] for i in range(0, len(text), width))
+
+def save_contigs(tuple_list, path):
+    with open(path, "w") as filin:
+        filin.write(">{}len={}".format(1, tuples[1]))
+        filin.write(fill(tuples[0]))
+
+           
