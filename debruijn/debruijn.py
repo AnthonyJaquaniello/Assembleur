@@ -142,4 +142,8 @@ def remove_paths(graph, path_list, delete_entry_node, delete_sink_node):
             graph.remove_node(path[i])
     return graph
 
-
+def select_best_path(graph, path_list, len_list, weight_list, delete_entry_node, delete_sink_node):
+    best_path = path_list[index(max(weight_list))]
+    path_list.remove(path_list)
+    remove_paths(path_list)
+    pass 
