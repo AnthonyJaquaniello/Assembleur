@@ -1,38 +1,11 @@
+import os
 import argparse
 import networkx as nt
+from statistics import stdev, mean
 from networkx.algorithms.shortest_paths.generic import shortest_path
-import os
-from statistics import stdev
-
-def get_starting_nodes():
-    pass
-
-def std():
-    pass
-
-def get_sink_nodes():
-    pass
-
-
-def path_average_weight():
-    pass
-
-
-def remove_paths():
-    pass
-
 
 def select_best_path():
     pass
-
-
-def save_contigs():
-    pass
-
-
-def get_contigs():
-    pass
-
 
 def solve_bubble():
     pass
@@ -41,10 +14,8 @@ def solve_bubble():
 def simplify_bubbles():
     pass
 
-
 def solve_entry_tips():
     pass
-
 
 def solve_out_tips():
     pass
@@ -61,12 +32,12 @@ args = parser.parse_args()
 def read_fastq(path):
     with open(path, "r") as filin:
         for line in filin:
-            if line[0] in ["A","T","G","C"]:
+            if line[0] in ["A", "T", "G", "C"]:
                 yield line[:-1]
 
 def cut_kmer(seq, klen):
     for i in range(0, len(seq)-klen+1):
-        yield seq[i:i+klen]
+        yield seq[i: i+klen]
 
 def build_kmer_dict(i, k):
     seq_gen = read_fastq(i)
@@ -79,17 +50,17 @@ def build_kmer_dict(i, k):
                 d[kmer] += 1
     return d
 
-kmer_dict = build_kmer_dict("../data/eva71_two_reads.fq", int(21))
+kmer_dict = build_kmer_dict("data/eva71_two_reads.fq", int(21))
 #../data/eva71_two_reads.fq
 ## Construction de l'arbre de de Bruijn
 
 def build_graph(dico):
-    graph = nt.DiGraph()
+    graphi = nt.DiGraph()
     for key in dico:
         prefix = key[:-1]
-        suffix = key[1:]   
-        graph.add_edge(prefix, suffix, weight = dico[key])
-    return graph
+        suffix = key[1:]
+        graphi.add_edge(prefix, suffix, weight=dico[key])
+    return graphi
 
 graph = build_graph(kmer_dict)
 
@@ -111,16 +82,14 @@ def get_sink_nodes(graph):
             l.append(d)
     return l
 
-print(input_node)
 output_node = get_sink_nodes(graph)
-print(output_node)
 
 def get_contigs(graph, inode, outnode):
     tuple_list = []
     for nodin in inode:
         for nodout in outnode:
             if len(list(nt.all_simple_paths(graph, nodin, nodout))) != 0:
-                path  = shortest_path(graph, nodin, nodout)
+                path = shortest_path(graph, nodin, nodout)
                 contig = path[0]
                 for i in range(1, len(path)):
                     contig += path[i][-1]
@@ -130,10 +99,10 @@ def get_contigs(graph, inode, outnode):
                 tuple_list.append(tuple(tuples))
     return tuple_list
 
-contig_list = get_contigs(graph, input_node, output_node)
+#contig_list = get_contigs(graph, input_node, output_node)
 
 def fill(text, width=80):
-    return os.linesep.join(text[i:i+width] for i in range(0, len(text), width))
+    return os.linesep.join(text[i: i+width] for i in range(0, len(text), width))
 
 def save_contigs(tuple_list, path):
     with open(path, "w") as filin:
@@ -141,10 +110,36 @@ def save_contigs(tuple_list, path):
             filin.write(">contig_{} len={}\n".format(i, tuple_list[i][1]))
             filin.write(fill(tuple_list[i][0]))
             filin.write("\n")
-            
 
-save_contigs(contig_list, "save_contig.txt")
+#save_contigs(contig_list, "save_contig.txt")
 
 def std(liste):
     return stdev(liste)
-           
+
+path_gen = list(nt.all_simple_paths(graph, input_node[0], output_node[0]))
+
+def path_average_weight(graph, path):
+    path = list(path)
+    all_w = []
+    for i in range(0, len(path)-1):
+        for key in graph:
+            if key == path[i]:
+                try:
+                    d = dict(graph[key])
+                    w = list(d.values())[0]["weight"]
+                    all_w.append(w)
+                except:
+                    all_w.append(0)
+    return mean(all_w)
+
+def remove_paths(graph, path_list, delete_entry_node, delete_sink_node):
+    for path in path_list:
+        if delete_entry_node:
+            graph.remove_node(path[0])
+        if delete_sink_node:
+            graph.remove_node(path[-1])
+        for i in range(1, len(path)-1):
+            graph.remove_node(path[i])
+    return graph
+
+
